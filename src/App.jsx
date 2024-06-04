@@ -1,12 +1,16 @@
 import ToDo from "./components/ToDo";
 import { useState, useEffect } from "react";
 import { addToDo, getAllToDo, updateToDo, deleteToDo } from "./utils/HandleApi";
+import FullPageSpinner from "./components/FullPageSpinner";
 
 function App() {
   const [toDos, setToDos] = useState([]);
   const [text, setText] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateId, setUpdateId] = useState("");
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [isFullPageSpinnerLoading, setIsFullPageSpinnerLoading] =
+    useState(false);
 
   const updateMode = (id, text) => {
     setIsUpdating(true);
@@ -15,7 +19,7 @@ function App() {
   };
 
   useEffect(() => {
-    getAllToDo(setToDos);
+    getAllToDo(setToDos, setIsFullPageSpinnerLoading);
   }, []);
 
   return (
@@ -42,22 +46,39 @@ function App() {
                       setText,
                       setToDos,
                       setIsUpdating,
-                      setUpdateId
+                      setUpdateId,
+                      setIsButtonLoading,
+                      setIsFullPageSpinnerLoading
                     )
-                : () => addToDo(text, setText, setToDos)
+                : () =>
+                    addToDo(
+                      text,
+                      setText,
+                      setToDos,
+                      setIsButtonLoading,
+                      setIsFullPageSpinnerLoading
+                    )
             }
           >
-            {isUpdating ? "Update" : "Add"}
+            {isButtonLoading ? (
+              <div className="spinner" />
+            ) : (
+              <span> {isUpdating ? "Update" : "Add"}</span>
+            )}
           </button>
         </div>
         <div>
+          {isFullPageSpinnerLoading && <FullPageSpinner />}
+
           {toDos?.map((item, index) => (
             <ToDo
               text={item?.text}
               key={index}
               id={item?._id}
               updateMode={updateMode}
-              deleteToDo={() => deleteToDo(item._id, setToDos)}
+              deleteToDo={() =>
+                deleteToDo(item._id, setToDos, setIsFullPageSpinnerLoading)
+              }
             />
           ))}
         </div>
